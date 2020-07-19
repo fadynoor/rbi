@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="delivery_order_rbi">
+        <t t-call="web.html_container">
+            <t t-call="stock_rbi.external_layout_none">
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                
+                <div class="page">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td class="center" colspan="3">
+                                    <h3>LABEL PENGIRIMAN BARANG</h3>
+                                    <h4 t-field="o.name"/>
+                                </td>
+                                <td rowspan="3"><img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 100px;" alt="Logo"/></td>
+                            </tr>
+                            <tr>
+                                <td>PENGIRIM</td>
+                                <td>:</td>
+                                <td><span t-esc="o.company_id.display_name"/> ( <span t-esc="o.company_id.phone"/> )</td>
+                            </tr>
+                            <tr>
+                                <td>KURIR</td>
+                                <td>:</td> 
+                                <td><span t-esc="o.carrier_id.name"/> <t t-if="o.carrier_tracking_ref">( <span t-esc="o.carrier_tracking_ref"/> )</t></td>
+                            </tr>
+                            <tr>
+                                <td>KEPADA</td>
+                                <td>:</td>
+                                <td colspan="2"><span t-esc="o.partner_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td>NO HP</td>
+                                <td>:</td>
+                                <td colspan="2"><span t-esc="o.partner_id.mobile"/></td>
+                            </tr>
+                            <tr>
+                                <td>ALAMAT</td>
+                                <td>:</td>
+                                <td colspan="2">
+                                    <p>
+                                        <span t-esc="o.partner_id.street"/>, 
+                                        <span t-esc="o.partner_id.street2"/>, 
+                                        <span t-esc="o.partner_id.city"/>, 
+                                        <span t-esc="o.partner_id.state_id.name"/> 
+                                        <span t-esc="o.partner_id.zip"/>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>PESANAN</td>
+                                <td>:</td>
+                                <td colspan="2">
+                                    <table class="table">
+                                        <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                                        <tr t-foreach="lines" t-as="move">
+                                            <td>
+                                                <span t-field="move.product_id"/>
+                                                <p t-if="move.description_picking != move.product_id.name">
+                                                    <span t-field="move.description_picking"/>
+                                                </p>
+                                            </td>
+                                            <td>
+                                                x <span t-esc="move.product_uom_qty"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_deliveryslip_rbi">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="stock_rbi.delivery_order_rbi" t-lang="o.partner_id.lang"/>
+        </t>
+    </template>
+
+    <report
+            string="Resi Pengiriman"
+            id="action_report_delivery_rbi"
+            model="stock.picking"
+            report_type="qweb-pdf"
+            name="stock_rbi.report_deliveryslip_rbi"
+            file="stock_rbi.report_deliveryslip_rbi"
+            print_report_name="'Pengiriman - %s - %s' % (object.partner_id.name or '', object.name)"
+        />
+</odoo>
