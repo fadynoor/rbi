@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sale_stock.access_stock_picking_salesman,stock_picking salesman,stock.model_stock_picking,sales_team.group_sale_salesman,1,0,0,0
+access_stock_picking_salesall,stock_picking sales all,stock.model_stock_picking,sales_team.group_sale_salesman_all_leads,1,1,1,0
+access_stock_scrap_salesman,stock_scrap salesman,stock.model_stock_scrap,sales_team.group_sale_salesman,1,0,0,0
