@@ -13,12 +13,23 @@
                                     <h3>LABEL PENGIRIMAN BARANG</h3>
                                     <h4 t-field="o.name"/>
                                 </td>
-                                <td rowspan="3"><img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 100px;" alt="Logo"/></td>
+                    
+                                <td rowspan="3">
+                                    <!-- kalau dropship, maka logo tidak dicantumkan -->
+                                    <img t-if="o.company_id.logo and o.sale_id.partner_invoice_id == o.sale_id.partner_shipping_id" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 100px;" alt="Logo"/>
+                                </td>
                             </tr>
                             <tr>
                                 <td>PENGIRIM</td>
                                 <td>:</td>
-                                <td><span t-esc="o.company_id.display_name"/> ( <span t-esc="o.company_id.phone"/> )</td>
+                                <td>
+                                <t t-if="o.sale_id.partner_invoice_id == o.sale_id.partner_shipping_id">
+                                    <span t-esc="o.sale_id.partner_id.name"/> ( <span t-esc="o.sale_id.partner_id.mobile"/> )
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="o.company_id.display_name"/> ( <span t-esc="o.company_id.phone"/> )
+                                </t>
+                                </td>
                             </tr>
                             <tr>
                                 <td>KURIR</td>
@@ -63,7 +74,7 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                x <span t-esc="move.product_uom_qty"/>
+                                                x <span t-esc="move.qty_done"/>
                                             </td>
                                         </tr>
                                     </table>
