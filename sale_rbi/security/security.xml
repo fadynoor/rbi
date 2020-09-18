@@ -26,10 +26,10 @@
         </record>
 
         <record id="base.res_partner_rule_private_employee" model="ir.rule">
-            <field name="domain_force">[('customer_rank','>', 0),'|', ('create_uid','=', user.id), ('id','child_of',user.partner_id.id),'|', ('type', '!=', 'private'), ('type', '=', False)]</field>
+            <field name="domain_force">['|',('id','child_of',user.company_id.id),'|',('id','child_of',user.partner_id.id), ('create_uid','=',user.id),'|', ('type', '!=', 'private'), ('type', '=', False)]</field>
         </record>
         
-        <record id="rule_partner_salesmgr" model="ir.rule">
+        <!-- <record id="rule_partner_salesmgr" model="ir.rule">
             <field name="name">Sales All Doc: access except supplier</field>
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="domain_force">[('customer_rank','>', 0),'|', ('type', '!=', 'private'), ('type', '=', False)]</field>
@@ -39,7 +39,7 @@
             <field name="perm_read" eval="1"/>
             <field name="perm_create" eval="1"/>
             <field name="active" eval="1"/>
-        </record>
+        </record> -->
 
         <record id="rule_partner_salesmgr" model="ir.rule">
             <field name="name">Sales Manager: access all</field>
