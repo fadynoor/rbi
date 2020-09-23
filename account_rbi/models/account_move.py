@@ -18,3 +18,19 @@ class AccountMove(models.Model):
     #             move.attachment_number = 0
     #         else:    
     #             move.attachment_number = attachment.get(move.id, 0)
+
+    is_dp_invoice = fields.Boolean('Is DP', compute='_is_dp_invoice', store=True)
+    
+    @api.depends('invoice_line_ids')
+    def _is_dp_invoice(self):
+        for invoice in self:
+            if invoice.type != 'out_invoice':
+                invoice.is_dp_invoice = False
+            else:
+                dp_product_id = self.env['ir.config_parameter'].sudo().get_param('sale.default_deposit_product_id', False)
+                if all(
+                    [product_id == int(dp_product_id) for product_id in invoice.invoice_line_ids.product_id.ids]
+                    ):
+                    invoice.is_dp_invoice = True
+
+    

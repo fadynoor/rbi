@@ -31,30 +31,56 @@
     </record>
 -->
 
-    <!-- actions opening views on models -->
-<!--
-    <record model="ir.actions.act_window" id="account_rbi.action_window">
-      <field name="name">account_rbi window</field>
-      <field name="res_model">account_rbi.account_rbi</field>
-      <field name="view_mode">tree,form</field>
+    <!-- search views -->
+
+    <record id="view_account_invoice_filter_inherit" model="ir.ui.view">
+        <field name="name">account.invoice.select.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+          <xpath expr="//field[@name='date']" position="after">
+            <field name="invoice_line_ids" string="Product" filter_domain="[('invoice_line_ids.product_id', 'ilike', self)]"/>
+          </xpath>
+          <xpath expr="//filter[@name='in_payment']" position="before">
+            <filter name="not_dp" string="Not DP" domain="[('is_dp_invoice', '=', False)]"/>
+          </xpath>
+        </field>
     </record>
--->
+
+    <!-- actions opening views on models -->
+
+    <record model="ir.actions.act_window" id="account.action_move_out_invoice_type">
+      <field name="res_model">account.move</field>
+      <field name="context">{'default_type': 'out_invoice', 'search_default_not_dp': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="account_rbi.action_invoice_dp">
+      <field name="name">DP Invoices</field>
+      <field name="res_model">account.move</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="account.view_invoice_tree"/>
+      <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+      <field name="domain">[('type', '=', 'out_invoice'), ('is_dp_invoice', '=', True)]</field>
+    </record>
+
+    <!-- menu item -->
+
+    <menuitem name="DP Invoices" id="menu_invoice_dp" parent="account.menu_finance_receivables"
+              action="account_rbi.action_invoice_dp"/>
+
 
     <!-- server action to the one above -->
-<!--
-    <record model="ir.actions.server" id="account_rbi.action_server">
-      <field name="name">account_rbi server</field>
-      <field name="model_id" ref="model_account_rbi_account_rbi"/>
+
+    <record model="ir.actions.server" id="account_rbi.invoice_set_dp">
+      <field name="name">Invoices: Recheck whether DP/Not</field>
+      <field name="model_id" ref="model_account_move"/>
+      <field name="binding_model_id" ref="model_account_move"/>
       <field name="state">code</field>
       <field name="code">
-        action = {
-          "type": "ir.actions.act_window",
-          "view_mode": "tree,form",
-          "res_model": model._name,
-        }
+        records._is_dp_invoice()
       </field>
     </record>
--->
+
 
     <!-- Top menu item -->
 <!--
@@ -65,12 +91,6 @@
     <menuitem name="Menu 1" id="account_rbi.menu_1" parent="account_rbi.menu_root"/>
     <menuitem name="Menu 2" id="account_rbi.menu_2" parent="account_rbi.menu_root"/>
 -->
-    <!-- actions -->
-<!--
-    <menuitem name="List" id="account_rbi.menu_1_list" parent="account_rbi.menu_1"
-              action="account_rbi.action_window"/>
-    <menuitem name="Server to list" id="account_rbi" parent="account_rbi.menu_2"
-              action="account_rbi.action_server"/>
--->
+
   </data>
 </odoo>
