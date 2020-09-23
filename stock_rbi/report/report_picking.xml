@@ -114,7 +114,7 @@
     </record>
 
     <record id="action_report_delivery_rbi" model="ir.actions.report">
-        <field name="paperformat_id" ref="inventory_deliveryslip_report.inventory_deliveryslip_format_rbi"/>
+        <field name="paperformat_id" ref="stock_rbi.inventory_deliveryslip_format_rbi"/>
     </record>
 
     <report
