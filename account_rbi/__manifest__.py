@@ -28,7 +28,9 @@
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'data/mail_activity_data.xml',
         'views/views.xml',
+        'wizard/view_invoice_attach_receipt_wizard.xml',
         # 'views/templates.xml',
     ],
     # only loaded in demonstration mode

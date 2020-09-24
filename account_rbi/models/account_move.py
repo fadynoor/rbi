@@ -1,23 +1,9 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from datetime import datetime, timedelta
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
-
-    attachment = fields.Binary('Receipt', attachment=True)
-    attachment_filename = fields.Char('Filename')
-    attachment_date = fields.Date('Upload Date')
-
-    # attachment_number = fields.Integer('Number of Attachments', compute='_compute_attachment_number')
-
-    # def _compute_attachment_number(self):
-    #     attachment_data = self.env['ir.attachment'].read_group([('res_model', '=', 'account.move'), ('res_id', 'in', self.ids)], ['res_id'], ['res_id'])
-    #     attachment = dict((data['res_id'], data['res_id_count']) for data in attachment_data)
-    #     for move in self:
-    #         if move.type not in ['out_invoice', 'out_refund']:
-    #             move.attachment_number = 0
-    #         else:    
-    #             move.attachment_number = attachment.get(move.id, 0)
 
     is_dp_invoice = fields.Boolean('Is DP', compute='_is_dp_invoice', store=True)
     
@@ -32,5 +18,76 @@ class AccountMove(models.Model):
                     [product_id == int(dp_product_id) for product_id in invoice.invoice_line_ids.product_id.ids]
                     ):
                     invoice.is_dp_invoice = True
+
+    @api.model
+    def create(self, vals):
+        invoice = super(AccountMove, self).create(vals)
+        invoice.activity_update()
+        return invoice
+
+    def action_post(self):
+        invoice = super(AccountMove, self).action_post()
+        self.activity_update()
+        return invoice
+
+    def button_cancel(self):
+        invoice = super(AccountMove, self).button_cancel()
+        self.activity_update()
+        return invoice
+
+    def button_draft(self):
+        invoice = super(AccountMove, self).button_draft()
+        self.activity_update()
+        return invoice
+    
+    # TODO: blocking attach bila invoice DP statusnya belum post
+
+    # auto hapus activity bila lebih dari date_deadline
+    # supaya activity gak numpuk di notif admin
+    def delete_late_activities(self, date=False, delay=False):
+        invoices = self.env['account.move'].search([('type','=', 'out_invoice')])
+        activities = invoices.mapped('activity_ids')
+        date_end = date.strftime('%Y-%m-%d') if date else fields.Date.today()
+        date_end = date_end - timedelta(days=delay or 1)
+        activities.filtered(lambda act: act.date_deadline < date_end).unlink()
+        
+
+    def activity_update(self):
+        for invoice in self.filtered(lambda inv: inv.type == 'out_invoice' and inv.state == 'draft'):
+            activity_type = self.env.ref('account_rbi.mail_activity_invoice_post')
+            activity_vals = {
+                'activity_type_id': activity_type.id,
+                'date_deadline': datetime.now() + timedelta(days=activity_type.delay_count)
+            }
+            self.activity_schedule(summary='Post Invoice', **activity_vals)
+        
+        for invoice in self.filtered(lambda inv: inv.type == 'out_invoice' and inv.state == 'posted'):
+            self.activity_feedback(['account_rbi.mail_activity_invoice_post'])
+            
+            if invoice.message_attachment_count == 0:
+                activity_type = self.env.ref('account_rbi.mail_activity_invoice_receipt')
+                activity_vals = {
+                    'activity_type_id': activity_type.id,
+                    'user_id': invoice.sudo().partner_id.user_ids.id,
+                    'date_deadline': datetime.now() + timedelta(days=activity_type.delay_count)
+                }
+                self.activity_schedule(summary='Attach Payment Receipt', **activity_vals)
+            # TODO: find how to trigger paid invoice
+            # elif invoice.invoice_payment_state == 'paid':
+            #     self.activity_feedback(['account_rbi.mail_activity_invoice_paid'])
+            else:
+                self.activity_feedback(['account_rbi.mail_activity_invoice_receipt'])
+                activity_type = self.env.ref('account_rbi.mail_activity_invoice_paid')
+                activity_vals = {
+                    'activity_type_id': activity_type.id,
+                    'date_deadline': datetime.now() + timedelta(days=activity_type.delay_count)
+                }
+                self.activity_schedule(summary='Register Payment', **activity_vals)
+            
+        for invoice in self.filtered(lambda inv: inv.type == 'out_invoice' and inv.state == 'cancel'):     
+            self.activity_unlink(['account_rbi.mail_activity_invoice_post'])
+            self.activity_unlink(['account_rbi.mail_activity_invoice_receipt'])
+            self.activity_unlink(['account_rbi.mail_activity_invoice_paid'])
+
 
     

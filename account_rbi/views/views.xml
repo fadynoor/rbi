@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
   <odoo>
     <data>
-      <!-- <record model="ir.ui.view" id="view_move_form">
+      <record model="ir.ui.view" id="view_move_form_inherit">
         <field name="name">account.invoice.form.inherit</field>
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
           <xpath expr="//button[@name='action_invoice_register_payment']" position="before">
-            <widget name="attach_document" string="Attach Receipt" action="message_post" highlight="1" attrs="{'invisible': ['|', ('state','!=','posted'), ('type','not in',('out_invoice','out_refund'))]}"/>
+            <button name="%(account_rbi.action_invoice_attach_receipt)d" string="Attach Receipt" type="action" class="oe_highlight" attrs="{'invisible': ['|', '|',('type','!=','out_invoice'),('message_attachment_count','>', 0), '|', ('state','not in', ('posted')), '&amp;', ('state','=','draft'), ('is_dp_invoice','=',True)]}"/>
           </xpath>
-          <xpath expr="//field[@name='journal_id']" position="after">
-            <field name="attachment_filename" invisible="1" />
-            <field name="attachment" widget="binary" filename="attachment_filename" />
-            <field name="attachment_date"/>
+          <xpath expr="//field[@name='partner_id']" position="before">
+            <field name="message_attachment_count" invisible="1"/>
           </xpath>
         </field>
-      </record> -->
+      </record>
     <!-- explicit list view definition -->
 <!--
     <record model="ir.ui.view" id="account_rbi.list">
@@ -41,8 +39,12 @@
           <xpath expr="//field[@name='date']" position="after">
             <field name="invoice_line_ids" string="Product" filter_domain="[('invoice_line_ids.product_id', 'ilike', self)]"/>
           </xpath>
-          <xpath expr="//filter[@name='in_payment']" position="before">
+          <xpath expr="//filter[@name='myinvoices']" position="after">
             <filter name="not_dp" string="Not DP" domain="[('is_dp_invoice', '=', False)]"/>
+          </xpath>
+          <xpath expr="//filter[@name='activities_overdue']" position="before">
+            <filter name="post_invoice" string="Post Invoice" domain="[('activity_type_id','ilike','post')]"/>
+            <filter name="register_payment" string="Check Payment" domain="[('activity_type_id','ilike','payment')]"/>
           </xpath>
         </field>
     </record>

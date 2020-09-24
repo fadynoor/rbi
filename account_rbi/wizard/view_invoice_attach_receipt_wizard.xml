@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="invoice_attach_receipt_wizard_view">
+            <field name="name">invoice.receipt.wizard</field>
+            <field name="model">invoice.attach.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Upload Payment Receipt">
+                    <group>
+                        <field name="receipt" widget="binary" filename="receipt_name"/>
+                        <field name="receipt_name" invisible="1"/>
+                    </group>
+
+                    <footer>
+                        <button name="attach_receipt"
+                            string="Attach"
+                            type="object"
+                            class="oe_highlight"
+                            />
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_invoice_attach_receipt"
+                    name="Attach Payment Receipt"
+                    binding_model="account.move"
+                    res_model="invoice.attach.wizard"
+                    view_mode="form"
+                    target="new"/>
+    </data>
+</odoo>

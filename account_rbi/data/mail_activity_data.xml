@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="mail_activity_invoice_post" model="mail.activity.type">
+        <field name="name">Post Invoice</field>
+        <field name="icon">fa-check</field>
+        <field name="res_model_id" ref="account.model_account_move"/>
+        <field name="default_user_id" ref="base.user_admin"/>
+        <field name="delay_count">1</field>
+    </record>
+    <record id="mail_activity_invoice_receipt" model="mail.activity.type">
+        <field name="name">Attach Receipt</field>
+        <field name="icon">fa-copy</field>
+        <field name="res_model_id" ref="account.model_account_move"/>
+        <field name="delay_count">3</field>
+    </record>
+    <record id="mail_activity_invoice_paid" model="mail.activity.type">
+        <field name="name">Register Payment</field>
+        <field name="icon">fa-dollar</field>
+        <field name="res_model_id" ref="account.model_account_move"/>
+        <field name="default_user_id" ref="base.user_admin"/>
+        <field name="delay_count">3</field>
+    </record>
+
+	<record id="invoice_activity_cron" model="ir.cron">
+        <field name="name">Invoice: Delete late activities</field>
+        <field name="model_id" ref="model_account_move"/>
+        <field name="state">code</field>
+        <field name="code">model.delete_late_activities(delay=1)</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+    </record>
+</odoo>
