@@ -64,13 +64,13 @@ class AccountMove(models.Model):
         for invoice in self.filtered(lambda inv: inv.type == 'out_invoice' and inv.state == 'posted'):
             self.activity_feedback(['account_rbi.mail_activity_invoice_post'])
             
-            customer = invoice.sudo().partner_id
-            user = customer.user_ids
-            if not user:
-                user = customer.parent_id.user_ids
-
             if invoice.message_attachment_count == 0:
                 activity_type = self.env.ref('account_rbi.mail_activity_invoice_receipt')
+                customer = invoice.sudo().partner_id
+                user = customer.user_ids or customer.parent_id.user_ids
+                if not user:
+                    user = activity_type.default_user_id
+
                 activity_vals = {
                     'activity_type_id': activity_type.id,
                     'user_id': user.id,
