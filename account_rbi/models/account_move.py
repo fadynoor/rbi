@@ -67,9 +67,7 @@ class AccountMove(models.Model):
             if invoice.message_attachment_count == 0:
                 activity_type = self.env.ref('account_rbi.mail_activity_invoice_receipt')
                 customer = invoice.sudo().partner_id
-                user = customer.user_ids or customer.parent_id.user_ids
-                if not user:
-                    user = activity_type.default_user_id
+                user = customer.user_ids or customer.parent_id.user_ids or invoice.create_uid or activity_type.default_user_id
 
                 activity_vals = {
                     'activity_type_id': activity_type.id,
