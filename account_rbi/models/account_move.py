@@ -64,11 +64,16 @@ class AccountMove(models.Model):
         for invoice in self.filtered(lambda inv: inv.type == 'out_invoice' and inv.state == 'posted'):
             self.activity_feedback(['account_rbi.mail_activity_invoice_post'])
             
+            customer = invoice.sudo().partner_id
+            user = customer.user_ids
+            if not user:
+                user = customer.parent_id.user_ids
+
             if invoice.message_attachment_count == 0:
                 activity_type = self.env.ref('account_rbi.mail_activity_invoice_receipt')
                 activity_vals = {
                     'activity_type_id': activity_type.id,
-                    'user_id': invoice.sudo().partner_id.user_ids.id,
+                    'user_id': user.id,
                     'date_deadline': datetime.now() + timedelta(days=activity_type.delay_count)
                 }
                 self.activity_schedule(summary='Attach Payment Receipt', **activity_vals)
